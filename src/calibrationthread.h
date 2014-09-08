@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QVector>
+#include <Qlist>
 
 //OpenCV
 #include <opencv2/opencv.hpp>
@@ -35,8 +36,8 @@ private:
 
     QString calibDir;
 
-    QVector<cv::Mat> imagesLeft; // Chessboard images
-    QVector<cv::Mat> imagesRight;
+    QList<cv::Mat> imagesLeft; // Chessboard images
+    QList<cv::Mat> imagesRight;
     cv::Mat cameraMatrixLeft, cameraMatrixRight;
     cv::Mat distCoeffsLeft, distCoeffsRight;
 
@@ -49,11 +50,11 @@ private:
     cv::Mat map_l1, map_l2, map_r1, map_r2; //pixel maps for rectification
     cv::Mat Q;
 
-    void loadImages(QString camera, QVector<cv::Mat> &images);
-    void calcImagePoints(std::vector<std::vector<cv::Point2f>> &imagePoints, QVector<cv::Mat> &images);
+    void loadImages(QString camera, QList<cv::Mat> &images);
+    void calcImagePoints(std::vector<std::vector<cv::Point2f>> &imagePoints, QList<cv::Mat> &images);
     void calcImagePointsStereo();
     void singleCameraCalibration(QString camera, cv::Mat &cameraMatrix, cv::Mat &distCoeffs,
-                                 std::vector<std::vector<cv::Point2f>> imagePoints, QVector<cv::Mat> images);
+                                 std::vector<std::vector<cv::Point2f>> imagePoints, QList<cv::Mat> images);
     void stereoCalibration();
     void rectifyImage();
 

@@ -71,7 +71,7 @@ void CalibrationThread::run()
 
 }
 
-void CalibrationThread::loadImages(QString camera, QVector<cv::Mat> &images)
+void CalibrationThread::loadImages(QString camera, QList<cv::Mat> &images)
 {
 
     QDir calibDirectory(calibDir + camera);
@@ -87,7 +87,7 @@ void CalibrationThread::loadImages(QString camera, QVector<cv::Mat> &images)
 }
 
 void CalibrationThread::calcImagePoints(std::vector<std::vector<cv::Point2f> > &imagePoints,
-                                        QVector<cv::Mat> &images)
+                                        QList<cv::Mat> &images)
 {
     // Calculate the object points in the object co-ordinate system (origin at top left corner)
     std::vector<cv::Point3f> objPoints;
@@ -172,7 +172,7 @@ void CalibrationThread::calcImagePointsStereo()
 }
 
 void CalibrationThread::singleCameraCalibration(QString camera, cv::Mat &cameraMatrix, cv::Mat &distCoeffs,
-                                                std::vector<std::vector<cv::Point2f> > imagePoints, QVector<cv::Mat> images)
+                                                std::vector<std::vector<cv::Point2f> > imagePoints, QList<cv::Mat> images)
 {
     std::vector<cv::Mat> rvecs, tvecs;
 
