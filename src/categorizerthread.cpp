@@ -29,6 +29,14 @@ CategorizerThread::CategorizerThread(cv::Mat frame, QMap<QString, cv::SVM> svms,
     doStop = false;
 }
 
+CategorizerThread::~CategorizerThread()
+{
+    delete featureDetector;
+    delete descriptorExtractor;
+    delete descriptorMatcher;
+    delete bowDescriptorExtractor;
+}
+
 
 void CategorizerThread::run()
 {

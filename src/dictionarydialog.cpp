@@ -37,6 +37,7 @@ DictionaryDialog::DictionaryDialog(QWidget *parent, int deviceNumber, QString sv
 
 DictionaryDialog::~DictionaryDialog()
 {
+    capture.release();
     delete ui;
 }
 

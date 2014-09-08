@@ -24,6 +24,15 @@ DictionaryThread::DictionaryThread(QString dataDir,
     doStop = false;
 }
 
+DictionaryThread::~DictionaryThread()
+{
+    delete featureDetector;
+    delete descriptorExtractor;
+    delete bowtrainer;
+    delete descriptorExtractor;
+    delete bowDescriptorExtractor;
+}
+
 void DictionaryThread::stop()
 {
     QMutexLocker locker(&doStopMutex);

@@ -64,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    captureLeft.release();
+    captureRight.release();
     delete ui;
 }
 

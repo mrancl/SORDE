@@ -39,6 +39,8 @@ StereoCalibrationDialog::StereoCalibrationDialog(QWidget *parent, int leftCamId,
 
 StereoCalibrationDialog::~StereoCalibrationDialog()
 {
+    captureLeft.release();
+    captureRight.release();
     delete ui;
 }
 
