@@ -285,10 +285,6 @@ void MainWindow::on_distanceButton_clicked()
        {     
           QString object = ui->objectList->item(row)->text();
 
-          cv::Mat frameLeftRect, frameRightRect;
-          cv::remap(currentFrameRight, frameRightRect, map_r1, map_r2, cv::INTER_LINEAR);
-          cv::remap(currentFrameLeft, frameLeftRect, map_l1, map_l2, cv::INTER_LINEAR);
-
           disparityThread = new DisparityThread(currentFrameLeft, currentFrameRight, map_l1, map_l2,
                                                 map_r1, map_r2, Q, currentFrameLeft.size(),
                                                 detectedObjects[object], object);
