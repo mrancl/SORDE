@@ -90,7 +90,7 @@ void DisparityThread::run()
             //Inform GUI of distance to object
             emit objectDistance(cv::mean(z_roi), category);
         }
-        catch(cv::Exception e)
+        catch(const cv::Exception& e)
         {
             emit sendMessage(QString::fromStdString(e.err), 2500);
         }
