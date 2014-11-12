@@ -8,6 +8,8 @@
 #include <QList>
 #include <QDir>
 #include <QDirIterator>
+#include <QMutex>
+#include <QMutexLocker>
 
 //OpenCV
 #include <opencv2/opencv.hpp>
@@ -26,6 +28,15 @@ public:
                      int clusters);
 
     void stop();
+
+    QMap<QString, cv::Mat> getTemplates() const;
+    void setTemplates(const QMap<QString, cv::Mat> &value);
+
+    QList<QString> getCategoryNames() const;
+    void setCategoryNames(const QList<QString> &value);
+
+    QMap<QString, cv::Mat> getDesc() const;
+    void setDesc(const QMap<QString, cv::Mat> &value);
 
 private:
 

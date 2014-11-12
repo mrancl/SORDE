@@ -55,6 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(updateFrame()));
     timer->start(10);
 
+    stereoCalibDialog = NULL;
+    dictDialog = NULL;
+
     categorizerThread = NULL;
     calibrationThread = NULL;
     dictionaryThread = NULL;
@@ -64,6 +67,30 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    if(categorizerThread != NULL)
+    {
+        categorizerThread->quit();
+        categorizerThread->wait();
+    }
+
+    if(calibrationThread != NULL)
+    {
+        calibrationThread->quit();
+        calibrationThread->wait();
+    }
+
+    if(dictionaryThread != NULL)
+    {
+        dictionaryThread->quit();
+        dictionaryThread->wait();
+    }
+
+    if(disparityThread != NULL)
+    {
+        disparityThread->quit();
+        disparityThread->wait();
+    }
+
     captureLeft.release();
     captureRight.release();
     delete ui;
@@ -136,7 +163,7 @@ void MainWindow::showDetectedObjects(cv::Mat frame)
     // Display detected objects
     if(!detectedObjects.isEmpty())
     {
-        QMap<QString, std::vector<cv::Point2f>>::iterator iter;
+        QMap<QString, std::vector<cv::Point2f> >::iterator iter;
         cv::RNG rng(12345);
         for(iter = detectedObjects.begin(); iter != detectedObjects.end(); iter++)
         {
@@ -159,14 +186,22 @@ void MainWindow::findObjects()
         {
             detectedObjects.clear();
         }
-        categorizerThread = new CategorizerThread(currentFrameLeft, svms, vocab,
-                                                  keypoints, desc, templates, categoryNames);
+		
+        if(categorizerThread == NULL)
+        {
+            categorizerThread = new CategorizerThread(currentFrameLeft, svms, vocab,
+                                                      keypoints, desc, templates, categoryNames);
 
-        qRegisterMetaType<QMap<QString, std::vector<cv::Point2f> >>("QMap<QString, std::vector<cv::Point2f> >");
+            qRegisterMetaType<QMap<QString, std::vector<cv::Point2f> > >("QMap<QString, std::vector<cv::Point2f> >");
 
-        connect(categorizerThread, SIGNAL(doneProcessing(QMap<QString, std::vector<cv::Point2f> >)),
-              this, SLOT(objectRecognition(QMap<QString, std::vector<cv::Point2f> >)));
-        connect(categorizerThread, SIGNAL(sendException(QString,int)), this, SLOT(setMessage(QString, int)));
+            connect(categorizerThread, SIGNAL(doneProcessing(QMap<QString, std::vector<cv::Point2f> >)),
+                  this, SLOT(objectRecognition(QMap<QString, std::vector<cv::Point2f> >)));
+            connect(categorizerThread, SIGNAL(sendException(QString,int)), this, SLOT(setMessage(QString, int)));
+        }
+        else
+        {
+            categorizerThread->setFrame(currentFrameLeft);
+        }
 
         categorizerThread -> start();
 
@@ -183,7 +218,7 @@ void MainWindow::objectRecognition(const QMap<QString, std::vector<cv::Point2f> 
     {
         ui -> distanceButton -> setEnabled(true);
 
-        QMap<QString, std::vector<cv::Point2f>>::const_iterator iter;
+        QMap<QString, std::vector<cv::Point2f> >::const_iterator iter;
         for(iter = detectedObjects.begin(); iter != detectedObjects.end(); iter++)
         {
             QList<QListWidgetItem *> lsMatch = ui->objectList->findItems(iter.key(), Qt::MatchFixedString);
@@ -285,12 +320,23 @@ void MainWindow::on_distanceButton_clicked()
        {     
           QString object = ui->objectList->item(row)->text();
 
-          disparityThread = new DisparityThread(currentFrameLeft, currentFrameRight, map_l1, map_l2,
-                                                map_r1, map_r2, Q, currentFrameLeft.size(),
-                                                detectedObjects[object], object);
-          qRegisterMetaType<cv::Scalar>("cv::Scalar");
-          connect(disparityThread, SIGNAL(objectDistance(cv::Scalar, QString)), this, SLOT(setObjectDistance(cv::Scalar, QString)));
-          connect(disparityThread, SIGNAL(sendMessage(QString,int)), this, SLOT(setMessage(QString,int)));
+          if(disparityThread != NULL)
+          {
+              disparityThread = new DisparityThread(currentFrameLeft, currentFrameRight, map_l1, map_l2,
+                                                    map_r1, map_r2, Q, currentFrameLeft.size(),
+                                                    detectedObjects[object], object);
+              qRegisterMetaType<cv::Scalar>("cv::Scalar");
+              connect(disparityThread, SIGNAL(objectDistance(cv::Scalar, QString)), this, SLOT(setObjectDistance(cv::Scalar, QString)));
+              connect(disparityThread, SIGNAL(sendMessage(QString,int)), this, SLOT(setMessage(QString,int)));
+          }
+          else
+          {
+              disparityThread->setFramel(currentFrameLeft);
+              disparityThread->setFramer(currentFrameRight);
+              disparityThread->setImageSize(currentFrameLeft.size());
+              disparityThread->setDetectedObject(detectedObjects[object]);
+              disparityThread->setCategory(object);
+          }
 
           disparityThread->start();
 
@@ -326,6 +372,9 @@ void MainWindow::on_actionGenerate_Template_Keypoints_triggered()
 
 void MainWindow::on_actionAdd_object_triggered()
 {
+    if(dictDialog != NULL)
+        delete dictDialog;
+
     dictDialog = new DictionaryDialog(this, leftCamera, svmDataDirectory);
 
     timer -> stop();
@@ -349,14 +398,23 @@ void MainWindow::on_actionAdd_object_triggered()
         keypoints[dictDialog -> getObjectName()] = kp;
         desc[dictDialog -> getObjectName()] = descriptor;
         timer -> start();
+		
+        if(dictionaryThread == NULL)
+        {
+            dictionaryThread = new DictionaryThread(svmDataDirectory, templates, desc, categoryNames, 1000);
+            connect(dictionaryThread, SIGNAL(updateProgress(int)), this, SLOT(setProgress(int)));
 
-        dictionaryThread = new DictionaryThread(svmDataDirectory, templates, desc, categoryNames, 1000);
-        connect(dictionaryThread, SIGNAL(updateProgress(int)), this, SLOT(setProgress(int)));
-
-        qRegisterMetaType<QMap<QString, cv::SVM>>("QMap<QString, cv::SVM>");
-        qRegisterMetaType<cv::Mat>("cv::Mat");
-        connect(dictionaryThread, SIGNAL(doneGeneratingDictionary(QMap<QString,cv::SVM>,cv::Mat)),
-                this, SLOT(setDictSVM(QMap<QString,cv::SVM>,cv::Mat)));
+            qRegisterMetaType<QMap<QString, cv::SVM> >("QMap<QString, cv::SVM>");
+            qRegisterMetaType<cv::Mat>("cv::Mat");
+            connect(dictionaryThread, SIGNAL(doneGeneratingDictionary(QMap<QString,cv::SVM>,cv::Mat)),
+                    this, SLOT(setDictSVM(QMap<QString,cv::SVM>,cv::Mat)));
+        }
+        else
+        {
+            dictionaryThread->setTemplates(templates);
+            dictionaryThread->setDesc(desc);
+            dictionaryThread->setCategoryNames(categoryNames);
+        }
 
         progressBar->show();
         dictionaryThread->start();
@@ -368,6 +426,10 @@ void MainWindow::on_actionAdd_object_triggered()
 void MainWindow::on_actionCamera_Calibration_triggered()
 {
     timer->stop();
+
+    if(stereoCalibDialog != NULL)
+        delete stereoCalibDialog;
+
     stereoCalibDialog = new StereoCalibrationDialog(this, leftCamera, rightCamera, calibDataDirectory);
 
     //Put the dialog in the screen center
@@ -387,14 +449,17 @@ void MainWindow::on_actionCamera_Calibration_triggered()
         float sideLength = stereoCalibDialog->getSquareSize();
 
         timer->start();
+		
+        if(calibrationThread == NULL)
+        {
+            calibrationThread = new CalibrationThread(calibDataDirectory, patternSize, sideLength);
 
-        calibrationThread = new CalibrationThread(calibDataDirectory, patternSize, sideLength);
-
-        connect(calibrationThread, SIGNAL(updateProgress(int)), this, SLOT(setProgress(int)));
-        connect(calibrationThread, SIGNAL(sendMessage(QString)), ui->statusBar, SLOT(showMessage(QString)));
-        qRegisterMetaType<cv::Mat>("cv::Mat");
-        connect(calibrationThread, SIGNAL(sendRectificationData(cv::Mat,cv::Mat,cv::Mat,cv::Mat,cv::Mat)),
-                this, SLOT(setRectificationData(cv::Mat,cv::Mat,cv::Mat,cv::Mat,cv::Mat)));
+            connect(calibrationThread, SIGNAL(updateProgress(int)), this, SLOT(setProgress(int)));
+            connect(calibrationThread, SIGNAL(sendMessage(QString)), ui->statusBar, SLOT(showMessage(QString)));
+            qRegisterMetaType<cv::Mat>("cv::Mat");
+            connect(calibrationThread, SIGNAL(sendRectificationData(cv::Mat,cv::Mat,cv::Mat,cv::Mat,cv::Mat)),
+                    this, SLOT(setRectificationData(cv::Mat,cv::Mat,cv::Mat,cv::Mat,cv::Mat)));
+        }
 
         progressBar->show();
         calibrationThread->start();

@@ -4,7 +4,7 @@
 
 CategorizerThread::CategorizerThread(cv::Mat frame, QMap<QString, cv::SVM> svms,
                                      cv::Mat vocab,
-                                     QMap<QString, std::vector<cv::KeyPoint>> keypoints,
+                                     QMap<QString, std::vector<cv::KeyPoint> > keypoints,
                                      QMap<QString, cv::Mat> desc,
                                      QMap<QString, cv::Mat> templates,
                                      QList<QString> categoryNames) :
@@ -28,15 +28,6 @@ CategorizerThread::CategorizerThread(cv::Mat frame, QMap<QString, cv::SVM> svms,
 
     doStop = false;
 }
-
-CategorizerThread::~CategorizerThread()
-{
-    delete featureDetector;
-    delete descriptorExtractor;
-    delete descriptorMatcher;
-    delete bowDescriptorExtractor;
-}
-
 
 void CategorizerThread::run()
 {
@@ -109,10 +100,20 @@ void CategorizerThread::stop()
     QMutexLocker locker(&doStopMutex);
     doStop = true;
 }
+cv::Mat CategorizerThread::getFrame() const
+{
+    return frame;
+}
+
+void CategorizerThread::setFrame(const cv::Mat &value)
+{
+    frame = value;
+}
+
 
 void CategorizerThread::objectRecognition(std::vector<cv::KeyPoint> kpFrame, cv::Mat descFrame, QString category)
 {
-   std::vector<std::vector<cv::DMatch>> matches;
+   std::vector<std::vector<cv::DMatch> > matches;
    std::vector<cv::Point2f> obj;
    std::vector<cv::Point2f> scene;
    std::vector<cv::Point2f> obj_corners(4);

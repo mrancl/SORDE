@@ -24,20 +24,42 @@ DictionaryThread::DictionaryThread(QString dataDir,
     doStop = false;
 }
 
-DictionaryThread::~DictionaryThread()
-{
-    delete featureDetector;
-    delete descriptorExtractor;
-    delete bowtrainer;
-    delete descriptorExtractor;
-    delete bowDescriptorExtractor;
-}
 
 void DictionaryThread::stop()
 {
     QMutexLocker locker(&doStopMutex);
     doStop = true;
 }
+QMap<QString, cv::Mat> DictionaryThread::getTemplates() const
+{
+    return templates;
+}
+
+void DictionaryThread::setTemplates(const QMap<QString, cv::Mat> &value)
+{
+    templates = value;
+}
+QList<QString> DictionaryThread::getCategoryNames() const
+{
+    return categoryNames;
+}
+
+void DictionaryThread::setCategoryNames(const QList<QString> &value)
+{
+    categoryNames = value;
+}
+QMap<QString, cv::Mat> DictionaryThread::getDesc() const
+{
+    return desc;
+}
+
+void DictionaryThread::setDesc(const QMap<QString, cv::Mat> &value)
+{
+    desc = value;
+}
+
+
+
 
 void DictionaryThread::run()
 {

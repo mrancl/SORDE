@@ -64,12 +64,12 @@ private:
     cv::VideoCapture captureLeft;
     cv::VideoCapture captureRight;
 
-    QMap<QString, std::vector<cv::Point2f>> detectedObjects;
+    QMap<QString, std::vector<cv::Point2f> > detectedObjects;
     QMap<QString, cv::Mat> templates;
     QMap<QString, cv::SVM> svms; //trained SVMs, mapped by category name
     int categories; //number of categories
     cv::Mat vocab; //vocabulary
-    QMap<QString, std::vector<cv::KeyPoint>> keypoints; //map of template keypoints
+    QMap<QString, std::vector<cv::KeyPoint> > keypoints; //map of template keypoints
     QMap<QString, cv::Mat> desc; //map of template descriptors
     QList<QString> categoryNames;
 
@@ -103,7 +103,7 @@ private:
 private slots:
 
     void updateFrame();
-    void objectRecognition(const QMap<QString, std::vector<cv::Point2f>> &detectedObjects);
+    void objectRecognition(const QMap<QString, std::vector<cv::Point2f> > &detectedObjects);
     void setProgress(int progress);
     void setDictSVM(const QMap<QString, cv::SVM> &svms, const cv::Mat &vocab);
     void setMessage(const QString &message, int timeout = 0);

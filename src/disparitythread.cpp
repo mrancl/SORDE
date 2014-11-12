@@ -45,6 +45,56 @@ void DisparityThread::stop()
     QMutexLocker locker(&doStopMutex);
     doStop = true;
 }
+cv::Mat DisparityThread::getFramel() const
+{
+    return framel;
+}
+
+void DisparityThread::setFramel(const cv::Mat &value)
+{
+    framel = value;
+}
+cv::Mat DisparityThread::getFramer() const
+{
+    return framer;
+}
+
+void DisparityThread::setFramer(const cv::Mat &value)
+{
+    framer = value;
+}
+QString DisparityThread::getCategory() const
+{
+    return category;
+}
+
+void DisparityThread::setCategory(const QString &value)
+{
+    category = value;
+}
+cv::Size DisparityThread::getImageSize() const
+{
+    return imageSize;
+}
+
+void DisparityThread::setImageSize(const cv::Size &value)
+{
+    imageSize = value;
+}
+std::vector<cv::Point2f> DisparityThread::getDetectedObject() const
+{
+    return detectedObject;
+}
+
+void DisparityThread::setDetectedObject(const std::vector<cv::Point2f> &value)
+{
+    detectedObject = value;
+}
+
+
+
+
+
 
 void DisparityThread::run()
 {

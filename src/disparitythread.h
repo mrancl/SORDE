@@ -3,6 +3,8 @@
 
 //Qt
 #include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
 
 //OpenCV
 #include <opencv2/opencv.hpp>
@@ -17,6 +19,21 @@ public:
     DisparityThread(cv::Mat framel, cv::Mat framer, cv::Mat map_l1, cv::Mat map_l2, cv::Mat map_r1, cv::Mat map_r2,
                     cv::Mat Q, cv::Size imageSize, std::vector<cv::Point2f> detectedObject, QString category);
     void stop();
+
+    cv::Mat getFramel() const;
+    void setFramel(const cv::Mat &value);
+
+    cv::Mat getFramer() const;
+    void setFramer(const cv::Mat &value);
+
+    QString getCategory() const;
+    void setCategory(const QString &value);
+
+    cv::Size getImageSize() const;
+    void setImageSize(const cv::Size &value);
+
+    std::vector<cv::Point2f> getDetectedObject() const;
+    void setDetectedObject(const std::vector<cv::Point2f> &value);
 
 private:
 

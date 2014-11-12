@@ -6,7 +6,8 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QVector>
-#include <Qlist>
+#include <QList>
+#include <QMutex>
 
 //OpenCV
 #include <opencv2/opencv.hpp>
@@ -43,18 +44,18 @@ private:
 
     float sideLength; //side length of a chessboard square in mm
     cv::Size patternSize; //number of internal corners of the chessboard along width and height
-    std::vector<std::vector<cv::Point2f>> imagePointsLeft, imagePointsRight; // 2D image points
-    std::vector<std::vector<cv::Point3f>> objectPoints; // 3D object points
+    std::vector<std::vector<cv::Point2f> > imagePointsLeft, imagePointsRight; // 2D image points
+    std::vector<std::vector<cv::Point3f> > objectPoints; // 3D object points
 
     cv::Mat R, T, E, F; //stereo calibration information
     cv::Mat map_l1, map_l2, map_r1, map_r2; //pixel maps for rectification
     cv::Mat Q;
 
     void loadImages(QString camera, QList<cv::Mat> &images);
-    void calcImagePoints(std::vector<std::vector<cv::Point2f>> &imagePoints, QList<cv::Mat> &images);
+    void calcImagePoints(std::vector<std::vector<cv::Point2f> > &imagePoints, QList<cv::Mat> &images);
     void calcImagePointsStereo();
     void singleCameraCalibration(QString camera, cv::Mat &cameraMatrix, cv::Mat &distCoeffs,
-                                 std::vector<std::vector<cv::Point2f>> imagePoints, QList<cv::Mat> images);
+                                 std::vector<std::vector<cv::Point2f> > imagePoints, QList<cv::Mat> images);
     void stereoCalibration();
     void rectifyImage();
 

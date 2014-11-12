@@ -5,6 +5,7 @@
 #include <QThread>
 #include <vector>
 #include <QMap>
+#include <QMutex>
 
 //OpenCV
 #include <opencv2/opencv.hpp>
@@ -19,9 +20,12 @@ class CategorizerThread : public QThread
 public:
 
     CategorizerThread(cv::Mat frame, QMap<QString, cv::SVM> svms, cv::Mat vocab,
-                      QMap<QString, std::vector<cv::KeyPoint>> keypoints, QMap<QString, cv::Mat> desc,
+                      QMap<QString, std::vector<cv::KeyPoint> > keypoints, QMap<QString, cv::Mat> desc,
                       QMap<QString, cv::Mat> templates, QList<QString> categoryNames);
     void stop();
+
+    cv::Mat getFrame() const;
+    void setFrame(const cv::Mat &value);
 
 private:
 
@@ -34,9 +38,9 @@ private:
     QMap<QString, cv::SVM> svms; //trained SVMs, mapped by category name
     int categories; //number of categories
     cv::Mat vocab; //vocabulary
-    QMap<QString, std::vector<cv::KeyPoint>> keypoints; //map of template keypoints
+    QMap<QString, std::vector<cv::KeyPoint> > keypoints; //map of template keypoints
     QMap<QString, cv::Mat> desc; //map of template descriptors
-    QMap<QString, std::vector<cv::Point2f>> detectedObjects;
+    QMap<QString, std::vector<cv::Point2f> > detectedObjects;
     QList<QString> categoryNames;
 
 
@@ -55,7 +59,7 @@ protected:
 signals:
 
     void sendException(const QString &err, int timeout);
-    void doneProcessing(const QMap<QString, std::vector<cv::Point2f>> &detectedObjects);
+    void doneProcessing(const QMap<QString, std::vector<cv::Point2f> > &detectedObjects);
 
 };
 
